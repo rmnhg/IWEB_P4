@@ -14,12 +14,11 @@
     "turnof": "Turn of ",
     "altMainImg": "Website main image",
     "movements": "Number of moves: ",
-    "editmovie": "Edit Movie",
-    "add": "Add",
-    "download": "Download",
-    "reset": "Reset",
-    "delete": "Delete",
-    "edit": "Edit",
-    "upload": "Upload",
-    "view": "View"
+    "checkAnswer": "Check answer",
+    "anonymous": "Anonymous",
+    "previous": "Previous",
+    "next": "Next",
+    "score": "Score: ",
+    "altImgQuiz": "Image of the quiz: ",
+    "altImgAuthor": "Image of the author of the quiz: "
   }

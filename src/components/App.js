@@ -1,13 +1,8 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "./Navbar";
 import Info from "./Info";
-import MovieInfo from "./MovieInfo";
-import MovieForm from "./MovieForm";
-import { myInitialMovies } from "../constants/constants";
-import {postAPI, getAPI, updateAPI} from "../api";
 
 import { Routes, Route} from "react-router-dom";
-import {useNavigate} from "react-router-dom";
 
 import es from '../lang/es.json';
 import en from '../lang/en.json';
@@ -15,21 +10,44 @@ import en from '../lang/en.json';
 //TIC TAC TOE imports and constants
 import TicTacToe from './TicTacToe'
 
-//Quiz imports and costants
+//Quiz imports and constants
 import Quiz from './Quiz'
+import {quizzes} from "../assets/mock-data";
+class QuizModel {
+	constructor() {
+		this.initialState = {
+			score: 0,
+			finished: false,
+			currentQuiz: 0,
+			quizzes: [...quizzes]
+		}
+		this.answeredQuizzes = [];
+		this.score = this.initialState.score;
+		this.finished = this.initialState.finished;
+		this.currentQuiz = this.initialState.currentQuiz;
+		this.quizzes = this.initialState.quizzes;
+	}
+
+	reset() {
+		this.score = this.initialState.score;
+		this.finished = this.initialState.finished;
+		this.currentQuiz = this.initialState.currentQuiz;
+		this.quizzes = this.initialState.quizzes;
+	}
+
+	setQuizzes(quizzes) {
+		this.quizzes = [...quizzes];
+		this.initialState.quizzes = [...quizzes];
+	}
+}
 
 const dictionaryList = { en, es };
 
 export const LangContext = React.createContext({userLang: 'es', dictionary: es});
 
 export default function App() {
-	const [loading, setLoading] = useState(false);
-	const [mymovies, setMymovies] = useState([]);
-	const [nextid, setNextid] = useState(3);
-	const [downloaded, setDownloaded] = useState(null);
-	const [uploaded, setUploaded] = useState(null);
+	const [loading, setLoading] = useState(true);
 	const [lang, setLang] = useState('en');
-	const mylang = useContext(LangContext);
 
 	//TIC TAC TOE
 	const [turn, setTurn] = useState('X');
@@ -40,18 +58,43 @@ export default function App() {
 		['-', '-', '-']
 		]);
 
-	const navigate = useNavigate();
+	//QUIZ
+	const [quizModel, setQuizModel] = useState(new QuizModel());
+	const [userAnswer, setUserAnswer] = useState('');
+	const checkAnswer = (currentQuiz) => {
+		if (userAnswer.toLowerCase() === quizModel.quizzes[currentQuiz].answer.toLowerCase()) {
+			let nuevoQM = new QuizModel();
+			nuevoQM.score = (quizModel.answeredQuizzes.includes(currentQuiz)) ? quizModel.score : quizModel.score + 1;
+			nuevoQM.finished = (quizModel.quizzes.length - 1 === currentQuiz);
+			nuevoQM.currentQuiz = currentQuiz + ((quizModel.quizzes.length - 1 === currentQuiz) ? 0 : 1);
+			nuevoQM.quizzes = [...quizModel.quizzes];
+			if (!quizModel.answeredQuizzes.includes(currentQuiz)) {
+				nuevoQM.answeredQuizzes = [...quizModel.answeredQuizzes, currentQuiz];
+			} else {
+				nuevoQM.answeredQuizzes = [...quizModel.answeredQuizzes];
+			}
+			setQuizModel(nuevoQM);
+			if (quizModel.finished) {
+				alert("¡Respuesta correcta!");
+				return alert("¡Has acertado todos los quizzes! Tu puntuación es "+quizModel.score);
+			} else {
+				return alert("¡Respuesta correcta!");
+			}
+		} else {
+			return alert("¡Respuesta incorrecta!");
+		}
+	}
 
 	/**
 	 * Cambia el título de la página en función del juego en el que se esté, si se está jugando
 	 * @param {string} currentGame el juego en el que se está, si se está en alguno
 	 */
-	const updateTitle = (pagetitle, currentGame, turnof) => {
+	const updateTitle = (pagetitle, currentGame, extra) => {
 		// Update the document title using the browser API
-		if (currentGame == "tictactoe") {
-    		document.title = `${pagetitle} - ${turnof}`;
-		} else if (currentGame == "quiz") {
-			document.title = `${pagetitle} - Quiz`;
+		if (currentGame === "tictactoe") {
+    		document.title = `${pagetitle} - ${extra}`;
+		} else if (currentGame === "quiz") {
+			document.title = `${pagetitle} - Quiz - ${extra}`;
 		} else {
 			document.title = `${pagetitle}`
 		}
@@ -83,46 +126,10 @@ export default function App() {
 		setLang(event.target.value);
 	}
 
-	const update = (updatedmovie) => {
-		setMymovies(mymovies.map((movie, index) => updatedmovie.id === movie.id ? updatedmovie : movie));
-		navigate('/');
-	}
-
-	const erase = (idtoerase) => {
-		setMymovies(mymovies.filter((movie) => movie.id !== idtoerase));
-		navigate('/');
-	}	
-
-	const create = (movie)  => {
-		movie.id = nextid;
-		setMymovies([...mymovies, movie]);
-		setNextid(nextid + 1);
-		navigate('/');
-	}
-
-	const download = async () => {
-		let downloadedMovies = await getAPI();
-		setMymovies(downloadedMovies);
-		setDownloaded(new Date());
-	}
-
-	const upload = async () => {
-		await updateAPI(mymovies);
-		setUploaded( new Date());
-	}
-
-	const reset = () => {
-		setMymovies(myInitialMovies);
-		setDownloaded(null);
-		setUploaded(null);
-		navigate('/');
-	}
-
 	useEffect(() => {
 		async function fetchData() {
 		const res = await fetch("http://myjson.dit.upm.es/api/bins/ccr5");
 		const myjson = await res.json();
-		console.log(myjson);
 		setTurn(myjson.turn.includes('X') ? 'X' : '0');
 		setMoves(myjson.moves);
 		setValues(myjson.values);
@@ -130,18 +137,28 @@ export default function App() {
 
 		fetchData();
   }, []);
+
+	useEffect(() => {
+		async function fetchData() {
+			const url_base = "https://core.dit.upm.es/api";
+			const token = "e176550118dd9de9e5f0";
+			const res = await fetch(url_base+"/quizzes/random10wa?token="+token);
+			const quiz_json = await res.json();
+			quizModel.setQuizzes(quiz_json);
+			setLoading(false);
+		}
+
+		fetchData();
+	}, []);
 	
 	  	return (
 					<div className="root">
 						<LangContext.Provider value={{handleLanguageChange: handleLanguageChange, userLang: lang, dictionary: dictionaryList[lang]}}>
 						<Navbar/>
 						{loading ? <img src={process.env.PUBLIC_URL + "/spinner.gif"} className="spinner" alt="spinner" />: <Routes>
-								<Route path="/add" element={<MovieForm themovie={{}} create={create} new/>}/>
-								<Route path="/edit/:movieId"element={<MovieForm themovies={mymovies} update={update}/>}/>
-								<Route path="/show/:movieId" element={<MovieInfo themovies={mymovies} />}/>
 								<Route path="/"element={<Info updateTitle={updateTitle} />}/>
 								<Route path="/tictactoe" element={<TicTacToe turn={turn} values={values} appClick={appClick} moves={moves} resetClick={resetClick} updateTitle={updateTitle} new/>}/>
-								<Route path="/quiz" element={<Quiz themovie={{}} create={create} updateTitle={updateTitle}  new/>}/>
+								<Route path="/quiz" element={<Quiz quizModel={quizModel} updateTitle={updateTitle} setUserAnswer={setUserAnswer} checkAnswer={checkAnswer} new/>}/>
 							</Routes>}
 						</LangContext.Provider>
 					</div>
