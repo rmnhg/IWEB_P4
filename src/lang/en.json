@@ -14,11 +14,13 @@
     "turnof": "Turn of ",
     "altMainImg": "Website main image",
     "movements": "Number of moves: ",
-    "checkAnswer": "Check answer",
+    "checkAnswers": "Check answers",
     "anonymous": "Anonymous",
     "previous": "Previous",
     "next": "Next",
     "score": "Score: ",
     "altImgQuiz": "Image of the quiz: ",
-    "altImgAuthor": "Image of the author of the quiz: "
+    "altImgAuthor": "Image of the author of the quiz: ",
+    "finishAlert": "You have finished the quiz! You got a total score of ",
+    "restart": "Restart"
   }

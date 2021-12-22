@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { LangContext } from "./App";
+import { LangContext } from "../App";
 
 import Header from './Header.jsx';
 import Board from './Board.jsx';

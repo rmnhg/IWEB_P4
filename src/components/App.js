@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect} from "react";
 import Navbar from "./Navbar";
 import Info from "./Info";
 
@@ -8,10 +8,10 @@ import es from '../lang/es.json';
 import en from '../lang/en.json';
 
 //TIC TAC TOE imports and constants
-import TicTacToe from './TicTacToe'
+import TicTacToe from './TicTacToe/TicTacToe'
 
 //Quiz imports and constants
-import Quiz from './Quiz'
+import Quiz from './Quiz/Quiz'
 import {quizzes} from "../assets/mock-data";
 class QuizModel {
 	constructor() {
@@ -19,19 +19,20 @@ class QuizModel {
 			score: 0,
 			finished: false,
 			currentQuiz: 0,
+			answeredQuizzes: [],
 			quizzes: [...quizzes]
 		}
-		this.answeredQuizzes = [];
-		this.score = this.initialState.score;
-		this.finished = this.initialState.finished;
-		this.currentQuiz = this.initialState.currentQuiz;
-		this.quizzes = this.initialState.quizzes;
+		this.reset();
 	}
 
 	reset() {
 		this.score = this.initialState.score;
 		this.finished = this.initialState.finished;
 		this.currentQuiz = this.initialState.currentQuiz;
+		this.answeredQuizzes = [];
+		for (let i in this.initialState.quizzes) {
+			this.answeredQuizzes[i] = "";
+		}
 		this.quizzes = this.initialState.quizzes;
 	}
 
@@ -60,29 +61,48 @@ export default function App() {
 
 	//QUIZ
 	const [quizModel, setQuizModel] = useState(new QuizModel());
-	const [userAnswer, setUserAnswer] = useState('');
-	const checkAnswer = (currentQuiz) => {
-		if (userAnswer.toLowerCase() === quizModel.quizzes[currentQuiz].answer.toLowerCase()) {
-			let nuevoQM = new QuizModel();
-			nuevoQM.score = (quizModel.answeredQuizzes.includes(currentQuiz)) ? quizModel.score : quizModel.score + 1;
-			nuevoQM.finished = (quizModel.quizzes.length - 1 === currentQuiz);
-			nuevoQM.currentQuiz = currentQuiz + ((quizModel.quizzes.length - 1 === currentQuiz) ? 0 : 1);
-			nuevoQM.quizzes = [...quizModel.quizzes];
-			if (!quizModel.answeredQuizzes.includes(currentQuiz)) {
-				nuevoQM.answeredQuizzes = [...quizModel.answeredQuizzes, currentQuiz];
-			} else {
-				nuevoQM.answeredQuizzes = [...quizModel.answeredQuizzes];
-			}
-			setQuizModel(nuevoQM);
-			if (quizModel.finished) {
-				alert("¡Respuesta correcta!");
-				return alert("¡Has acertado todos los quizzes! Tu puntuación es "+quizModel.score);
-			} else {
-				return alert("¡Respuesta correcta!");
-			}
-		} else {
-			return alert("¡Respuesta incorrecta!");
+
+	const setUserAnswer = (answer) => {
+		let nuevoQM = new QuizModel();
+		nuevoQM.score = quizModel.score;
+		nuevoQM.finished = quizModel.finished;
+		nuevoQM.currentQuiz = quizModel.currentQuiz;
+		nuevoQM.answeredQuizzes = [];
+		for (let i in quizModel.answeredQuizzes) {
+			nuevoQM.answeredQuizzes[i] = quizModel.answeredQuizzes[i] || "";
 		}
+		nuevoQM.answeredQuizzes[quizModel.currentQuiz] = answer;
+		nuevoQM.quizzes = [...quizModel.quizzes];
+		setQuizModel(nuevoQM);
+	}
+
+	const checkAnswers = (alertMessage) => {
+		let nuevoQM = new QuizModel();
+		let score = 0;
+		for (let qi in quizModel.answeredQuizzes) {
+			score += (quizModel.answeredQuizzes[qi].toLowerCase() === quizModel.quizzes[qi].answer.toLowerCase()) ? 1 : 0;
+		}
+		nuevoQM.score = score;
+		nuevoQM.finished = true;
+		nuevoQM.currentQuiz = quizModel.currentQuiz;
+		nuevoQM.answeredQuizzes = [];
+		for (let i = 0; i < quizModel.quizzes.length; i++) {
+			nuevoQM.answeredQuizzes[i] = quizModel.answeredQuizzes[i] || "";
+		}
+		nuevoQM.quizzes = [...quizModel.quizzes];
+		setQuizModel(nuevoQM);
+		alert(alertMessage+score);
+	}
+
+	const setCurrentQuiz = (currentQuiz) => {
+		let nuevoQM = new QuizModel();
+		nuevoQM.score = quizModel.score;
+		nuevoQM.finished = quizModel.finished;
+		nuevoQM.currentQuiz = currentQuiz;
+		nuevoQM.quizzes = [...quizModel.quizzes];
+		nuevoQM.answeredQuizzes = [...quizModel.answeredQuizzes];
+		setQuizModel(nuevoQM);
+		return quizModel.answeredQuizzes[currentQuiz] || "";
 	}
 
 	/**
@@ -126,29 +146,37 @@ export default function App() {
 		setLang(event.target.value);
 	}
 
-	useEffect(() => {
-		async function fetchData() {
-		const res = await fetch("http://myjson.dit.upm.es/api/bins/ccr5");
-		const myjson = await res.json();
-		setTurn(myjson.turn.includes('X') ? 'X' : '0');
-		setMoves(myjson.moves);
-		setValues(myjson.values);
-		}
-
-		fetchData();
-  }, []);
-
-	useEffect(() => {
-		async function fetchData() {
-			const url_base = "https://core.dit.upm.es/api";
-			const token = "e176550118dd9de9e5f0";
+	async function fetchData() {
+		setLoading(true);
+		quizModel.reset();
+		const url_base = "https://core.dit.upm.es/api";
+		const token = "e176550118dd9de9e5f0";
+		try {
 			const res = await fetch(url_base+"/quizzes/random10wa?token="+token);
 			const quiz_json = await res.json();
 			quizModel.setQuizzes(quiz_json);
-			setLoading(false);
+		} catch (e) {
+			quizModel.setQuizzes(quizzes);
+		}
+		setLoading(false);
+	}
+
+	useEffect(() => {
+		async function fetchAllData() {
+			setLoading(true);
+			try {
+				const res = await fetch("http://myjson.dit.upm.es/api/bins/ccr5");
+				const myjson = await res.json();
+				setTurn(myjson.turn.includes('X') ? 'X' : '0');
+				setMoves(myjson.moves);
+				setValues(myjson.values);
+				await fetchData();
+			} catch (e) {}
 		}
 
-		fetchData();
+		fetchAllData();
+		setLoading(false);
+		// eslint-disable-next-line
 	}, []);
 	
 	  	return (
@@ -158,7 +186,7 @@ export default function App() {
 						{loading ? <img src={process.env.PUBLIC_URL + "/spinner.gif"} className="spinner" alt="spinner" />: <Routes>
 								<Route path="/"element={<Info updateTitle={updateTitle} />}/>
 								<Route path="/tictactoe" element={<TicTacToe turn={turn} values={values} appClick={appClick} moves={moves} resetClick={resetClick} updateTitle={updateTitle} new/>}/>
-								<Route path="/quiz" element={<Quiz quizModel={quizModel} updateTitle={updateTitle} setUserAnswer={setUserAnswer} checkAnswer={checkAnswer} new/>}/>
+								<Route path="/quiz" element={<Quiz quizModel={quizModel} updateTitle={updateTitle} setUserAnswer={setUserAnswer} checkAnswers={checkAnswers} setCurrentQuiz={setCurrentQuiz} fetchData={fetchData} new/>}/>
 							</Routes>}
 						</LangContext.Provider>
 					</div>

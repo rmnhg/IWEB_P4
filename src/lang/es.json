@@ -14,11 +14,13 @@
     "turnof": "Turno de ",
     "altMainImg": "Imagen principal de la página",
     "movements": "Número de movimientos: ",
-    "checkAnswer": "Comprobar respuesta",
+    "checkAnswers": "Comprobar respuestas",
     "anonymous": "Anónimo",
     "previous": "Anterior",
     "next": "Siguiente",
     "score": "Puntuación: ",
     "altImgQuiz": "Imagen del quiz: ",
-    "altImgAuthor": "Imagen del autor del quiz: "
+    "altImgAuthor": "Imagen del autor del quiz: ",
+    "finishAlert": "¡Has acabado el quiz! Has alcanzado una puntuación de ",
+    "restart": "Reiniciar"
   }

@@ -1,0 +1,25 @@
+//Integrantes del equipo:
+Andrés Ripoll Cabrera
+Ramón Hernández García
+//Identificador del equipo:
+a013
+//Mejoras:
+* El Quiz tiene las siguientes mejoras:
+ -> Se muestra la pregunta del quiz, su imagen si la tiene, su autor (o anónimo si no tiene autor)
+ -> Tiene botones laterales en columna para cambiar de pregunta a cualquiera que se elija de las 10 que hay.
+ -> Botones de anterior y siguiente para cambiar de pregunta en orden.
+ -> Botón que da una pista en la pregunta que se está mostrando actualmente.
+ -> Se guarda el estado de la respuesta de cada quiz según se escribe. Esto permite modificar respuestas anteriores al
+    cambiar de quiz o al irse temporalmente al tres en raya.
+ -> Al finalizar el quiz, se actualiza la puntuación y se muestra en una alerta. Además se bloquean las respuestas del
+    usuario para que no pueda modificarlas, deja de funcionar el botón de la pista y el botón de comprobar respuestas se
+    sustituye por otro botón que permite reiniciar la partida de quizzes con quizzes nuevos de Internet.
+ -> Al descargar quizzes de Internet, si falla algo y no se puden descargar, se muestran los quizes de mock-data.js por
+    defecto.
+ -> Al pulsar enter en el campo de respuesta de una pregunta se pasa a la siguiente, y si se está en la última se corri-
+    gen todas las preguntas.
+ -> La imagen del autor tiene bordes redondeados.
+* Se ha cambiado el favicon.
+* Se ha personalizado el diseño de la página en general.
+* Se ha cambiado un poco la implementación del tres en raya para adaptarla mejor a la práctica. Además, se han puesto
+  los botones con texto en negrita.
